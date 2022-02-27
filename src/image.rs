@@ -1,5 +1,4 @@
 use std::fmt;
-use std::num;
 
 use crate::color::*;
 
@@ -50,14 +49,14 @@ impl Image {
         let mut d = 2 * dx + dy;
 
         match quad {
-            0 => while (y <= y1) {
+            0 => while y <= y1 {
                 self.plot(x, y, color);
                 y += 1;
             },
-            1 => while (x <= x1) {
+            1 => while x <= x1 {
                 self.plot(x, y, color);
 
-                if (d > 0) {
+                if d > 0 {
                     y += 1;
                     d += 2 * dy;
                 }
@@ -65,10 +64,10 @@ impl Image {
                 x += 1;
                 d += 2 * dx;
             },
-            2 => while (y <= y1) {
+            2 => while y <= y1 {
                 self.plot(x, y, color);
 
-                if (d < 0) {
+                if d < 0 {
                     x += 1;
                     d += 2 * dx;
                 }
@@ -76,10 +75,10 @@ impl Image {
                 y += 1;
                 d += 2 * dy;
             },
-            3 => while (y >= y1) {
+            3 => while y >= y1 {
                 self.plot(x, y, color);
 
-                if (d > 0) {
+                if d > 0 {
                     x += 1;
                     d += 2 * dx;
                 }
@@ -87,10 +86,10 @@ impl Image {
                 y -= 1;
                 d -= 2 * dy;
             },
-            4 => while (x <= x1 && y >= 0) {
+            4 => while x <= x1 && y >= 0 {
                 self.plot(x, y, color);
 
-                if (d < 0) {
+                if d < 0 {
                     y -= 1;
                     d -= 2 * dy;
                 }
