@@ -25,11 +25,19 @@ impl fmt::Display for Color {
     }
 }
 
+#[allow(dead_code)]
 pub const COLOR_BLACK: Color = new!(0, 0, 0);
+#[allow(dead_code)]
 pub const COLOR_WHITE: Color = new!(255, 255, 255);
+#[allow(dead_code)]
 pub const COLOR_RED: Color = new!(255, 0, 0);
+#[allow(dead_code)]
 pub const COLOR_GREEN: Color = new!(0, 255, 0);
+#[allow(dead_code)]
 pub const COLOR_BLUE: Color = new!(0, 0, 255);
+#[allow(dead_code)]
 pub const COLOR_TEAL: Color = new!(0, 255, 255);
+#[allow(dead_code)]
 pub const COLOR_PURPLE: Color = new!(255, 0, 255);
+#[allow(dead_code)]
 pub const COLOR_YELLOW: Color = new!(255, 255, 0);

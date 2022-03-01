@@ -1,25 +1,20 @@
 use std::ops::{Index, IndexMut};
 use std::fmt::{Display, Formatter, Result};
-use rayon::prelude::*;
 
 #[derive(Clone, Copy)]
 pub struct ConstMatrix<T, const WIDTH: usize, const HEIGHT: usize> {
-    arr: [[T; WIDTH]; HEIGHT]
+    arr: [[T; HEIGHT]; WIDTH]
 }
 
 impl<T, const WIDTH: usize, const HEIGHT: usize> ConstMatrix<T, WIDTH, HEIGHT> where T: Default + Copy {
     pub fn new() -> Self {
         Self {
-            arr: [[T::default(); WIDTH]; HEIGHT]
+            arr: [[T::default(); HEIGHT]; WIDTH]
         }
     }
 
-    pub fn fill(&mut self, n: T) {
-        self.arr = [[n; WIDTH]; HEIGHT];
-    }
-
-    pub fn set(&mut self, x: usize, y: usize, n: T) {
-        self.arr[x][y] = n;
+    pub fn set_col(&mut self, col_num: usize, col: &[T; HEIGHT]) {
+        self.arr[col_num] = col.clone();
     }
 }
 
@@ -69,22 +64,33 @@ impl<T> Matrix<T> where T: Default + Copy {
         }
     }
 
-    pub fn set_val(&mut self, x: usize, y: usize, n: T) {
-        self[(x, y)] = n;
-    }
-
     pub fn set_inner(&mut self, x: usize, p: Point<T>) {
         self.arr[x] = p;
     }
 
-    pub fn add(&mut self, p: Point<T>) {
+    pub fn add_point(&mut self, p: Point<T>) {
         self.arr.push(p);
         self.width += 1;
     }
 
-    pub fn const_multi<const WIDTH: usize, const HEIGHT: usize>(&mut self, m: ConstMatrix<T, WIDTH, HEIGHT>) {
-        
+    pub fn add_edge(&mut self, p1: Point<T>, p2: Point<T>) {
+        self.add_point(p1);
+        self.add_point(p2);
     }
+}
+
+pub fn const_multi<const WIDTH: usize, const HEIGHT: usize>(a: ConstMatrix<f64, WIDTH, HEIGHT>, b: &Matrix<f64>) -> Matrix<f64> {
+    let mut c = Matrix::<f64>::new(b.width, b.height);
+
+    for m in 0..WIDTH {
+        for r in 0..b.width {
+            for k in 0..b.height {
+                c[(r, m)] += a[(k, m)] * b[(r, k)];
+            }
+        }
+    }
+
+    c
 }
 
 impl<T> Index<(usize, usize)> for Matrix<T> {

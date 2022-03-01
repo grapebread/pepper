@@ -1,6 +1,7 @@
 use std::fmt;
 
 use crate::color::*;
+use crate::matrix::Matrix;
 
 pub struct Image {
     height: usize,
@@ -18,6 +19,12 @@ impl Image {
         }
     }
 
+    pub fn draw_lines(&mut self, m: &Matrix<f64>, color: Color) {
+        for w in m.arr.windows(2).step_by(2) {
+            self.draw_line(w[0][0] as i32, w[0][1] as i32, w[1][0] as i32, w[1][1] as i32, color);
+        }
+    }
+
     pub fn draw_line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: Color) {
         if x0 > x1 {
             self.draw_line_help(x1, y1, x0, y0, color);
@@ -28,7 +35,7 @@ impl Image {
 
     fn draw_line_help(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: Color) {
         let slope = slope(x0, y0, x1, y1);
-        let mut quad = match slope {
+        let quad = match slope {
             Some(m) => if m > 1_f32 {
                     2
                 } else if 0_f32 <= m && m <= 1_f32 {
@@ -49,9 +56,17 @@ impl Image {
         let mut d = 2 * dx + dy;
 
         match quad {
-            0 => while y <= y1 {
-                self.plot(x, y, color);
-                y += 1;
+            0 => if y0 > y1 {
+                y = y1;
+                while y <= y0 {
+                    self.plot(x, y, color);
+                    y += 1;
+                }
+            } else {
+                while y <= y1 {
+                    self.plot(x, y, color);
+                    y += 1;
+                }
             },
             1 => while x <= x1 {
                 self.plot(x, y, color);
