@@ -1,7 +1,8 @@
 use std::fmt;
 
 use crate::color::*;
-use crate::matrix::Matrix;
+use crate::math::DynMatrix;
+
 
 pub struct Image {
     height: usize,
@@ -19,13 +20,17 @@ impl Image {
         }
     }
 
-    pub fn draw_lines(&mut self, m: &Matrix<f64>, color: Color) {
-        for w in m.arr.windows(2).step_by(2) {
-            self.draw_line(w[0][0] as i32, w[0][1] as i32, w[1][0] as i32, w[1][1] as i32, color);
+    pub fn reset(&mut self, color: Color) {
+        self.raster = vec![color; self.width * self.height];
+    }
+
+    pub fn draw_lines(&mut self, m: &DynMatrix<f64>, color: Color) {
+        for chunk in m.matrix.chunks(8) {
+            self.draw_line(chunk[0] as i32, chunk[1] as i32, chunk[4] as i32, chunk[5] as i32, color);
         }
     }
 
-    pub fn draw_line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: Color) {
+    fn draw_line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: Color) {
         if x0 > x1 {
             self.draw_line_help(x1, y1, x0, y0, color);
         } else {
