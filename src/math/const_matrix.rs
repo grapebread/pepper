@@ -13,6 +13,12 @@ pub struct ConstMatrix<T, const WIDTH: usize, const HEIGHT: usize> {
 }
 
 impl<T: Default + Copy + Float + Send + Sync + Display, const WIDTH: usize, const HEIGHT: usize> ConstMatrix<T, WIDTH, HEIGHT> {
+    pub fn from(arr: [[T; HEIGHT]; WIDTH]) -> Self {
+        Self {
+            matrix: arr
+        }
+    }
+
     pub fn identity() -> Self {
         assert_eq!(WIDTH, HEIGHT, "Matrix is not square");
 

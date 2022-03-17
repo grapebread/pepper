@@ -5,7 +5,7 @@ use scan_fmt::scan_fmt;
 
 use crate::color::{COLOR_BLACK, COLOR_TEAL};
 use crate::image::Image;
-use crate::math::{ConstMatrix, DynMatrix, new_point, RotationAxis};
+use crate::math::{ConstMatrix, DynMatrix, new_point, RotationAxis, Curve};
 
 pub fn parse<const WIDTH: usize, const HEIGHT: usize>(transform: &mut ConstMatrix<f64, WIDTH, HEIGHT>, edgelist: &mut DynMatrix<f64>, image: &mut Image, filename: &str) -> io::Result<()> {
     let file = File::open(filename)?;
@@ -54,6 +54,21 @@ pub fn parse<const WIDTH: usize, const HEIGHT: usize>(transform: &mut ConstMatri
                     _ => ()
                 }
             },
+            "circle" => {
+                let data = lines.next().unwrap().unwrap();
+                let (cx, cy, cz, r) = scan_fmt!(data.as_str(), "{} {} {} {}", f64, f64, f64, f64).expect("Unable to read circle data");
+                edgelist.add_circle(cx, cy, cz, r, 0.005);
+            },
+            "hermite" => {
+                let data = lines.next().unwrap().unwrap();
+                let (x0, y0, x1, y1, rx0, ry0, rx1, ry1) = scan_fmt!(data.as_str(), "{} {} {} {} {} {} {} {}", f64, f64, f64, f64, f64, f64, f64, f64).expect("Unable to read hermite data");
+                edgelist.add_curve(x0, y0, x1, y1, rx0, ry0, rx1, ry1, 0.005, Curve::HERMITE);
+            }
+            "bezier" => {
+                let data = lines.next().unwrap().unwrap();
+                let (x0, y0, x1, y1, x2, y2, x3, y3) = scan_fmt!(data.as_str(), "{} {} {} {} {} {} {} {}", f64, f64, f64, f64, f64, f64, f64, f64).expect("Unable to read hermite data");
+                edgelist.add_curve(x0, y0, x1, y1, x2, y2, x3, y3, 0.005, Curve::BEZIER);
+            }
             "apply" => {
                 edgelist.multiply(&transform);
             },
@@ -67,8 +82,13 @@ pub fn parse<const WIDTH: usize, const HEIGHT: usize>(transform: &mut ConstMatri
                 image.draw_lines(edgelist, COLOR_TEAL);
                 write(save_name, format!("{}", image))?;
             }
-            _ => {
-                println!("Feature not implemented");
+            unknown => {
+                match unknown.chars().next().unwrap() {
+                    '#' => (),
+                    _ => {
+                        println!("Feature not implemented: {}", unknown);
+                    }
+                }
             }
         }
     }
