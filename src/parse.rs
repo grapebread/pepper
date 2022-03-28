@@ -3,7 +3,7 @@ use std::io::{self, prelude::*, BufReader};
 
 use scan_fmt::scan_fmt;
 
-use crate::color::{COLOR_BLACK, COLOR_TEAL};
+use crate::color::{COLOR_BLACK, COLOR_TEAL, COLOR_PASTEL_YELLOW};
 use crate::image::Image;
 use crate::math::{ConstMatrix, DynMatrix, new_point, RotationAxis, Curve};
 
@@ -17,7 +17,7 @@ pub fn parse<const WIDTH: usize, const HEIGHT: usize>(transform: &mut ConstMatri
             "line" => {
                 let data = lines.next().unwrap().unwrap();
                 let (x0, y0, z0, x1, y1, z1) = scan_fmt!(data.as_str(), "{} {} {} {} {} {}", f64, f64, f64, f64, f64, f64).expect("Unable to read line data");
-                edgelist.add_edge(new_point(x0, y0, z0), new_point(x1, y1, z1));
+                edgelist.add_edge(&new_point(x0, y0, z0), &new_point(x1, y1, z1));
             },
             "ident" => {
                 transform.matrix = ConstMatrix::<f64, WIDTH, HEIGHT>::identity().matrix;
@@ -57,29 +57,47 @@ pub fn parse<const WIDTH: usize, const HEIGHT: usize>(transform: &mut ConstMatri
             "circle" => {
                 let data = lines.next().unwrap().unwrap();
                 let (cx, cy, cz, r) = scan_fmt!(data.as_str(), "{} {} {} {}", f64, f64, f64, f64).expect("Unable to read circle data");
-                edgelist.add_circle(cx, cy, cz, r, 0.005);
+                edgelist.add_circle(cx, cy, cz, r, 0.05);
             },
             "hermite" => {
                 let data = lines.next().unwrap().unwrap();
                 let (x0, y0, x1, y1, rx0, ry0, rx1, ry1) = scan_fmt!(data.as_str(), "{} {} {} {} {} {} {} {}", f64, f64, f64, f64, f64, f64, f64, f64).expect("Unable to read hermite data");
-                edgelist.add_curve(x0, y0, x1, y1, rx0, ry0, rx1, ry1, 0.005, Curve::HERMITE);
+                edgelist.add_curve(x0, y0, x1, y1, rx0, ry0, rx1, ry1, 0.05, Curve::HERMITE);
             }
             "bezier" => {
                 let data = lines.next().unwrap().unwrap();
                 let (x0, y0, x1, y1, x2, y2, x3, y3) = scan_fmt!(data.as_str(), "{} {} {} {} {} {} {} {}", f64, f64, f64, f64, f64, f64, f64, f64).expect("Unable to read hermite data");
-                edgelist.add_curve(x0, y0, x1, y1, x2, y2, x3, y3, 0.005, Curve::BEZIER);
+                edgelist.add_curve(x0, y0, x1, y1, x2, y2, x3, y3, 0.05, Curve::BEZIER);
+            }
+            "clear" => {
+                edgelist.matrix.clear();
+            }
+            "box" => {
+                let data = lines.next().unwrap().unwrap();
+                let (x, y, z, width, height, depth) = scan_fmt!(data.as_str(), "{} {} {} {} {} {}", f64, f64, f64, f64, f64, f64).expect("Unable to read box data");
+                edgelist.add_box(new_point(x, y, z), width, height, depth);
+            }
+            "sphere" => {
+                let data = lines.next().unwrap().unwrap();
+                let (cx, cy, cz, radius) = scan_fmt!(data.as_str(), "{} {} {} {}", f64, f64, f64, f64).expect("Unable to read sphere data");
+                edgelist.add_sphere(new_point(cx, cy, cz), radius, 0.05);
+            }
+            "torus" => {
+                let data = lines.next().unwrap().unwrap();
+                let (cx, cy, cz, r0, r1) = scan_fmt!(data.as_str(), "{} {} {} {} {}", f64, f64, f64, f64, f64).expect("Unable to read sphere data");
+                edgelist.add_torus(new_point(cx, cy, cz), r0, r1, 0.06)
             }
             "apply" => {
                 edgelist.multiply(&transform);
             },
             "display" => {
-                // can't display anything on wsl
+                println!("Unable to display anything on my pc due to using WSL");
             },
             "save" => {
                 let data = lines.next().unwrap().unwrap();
                 let save_name = scan_fmt!(data.as_str(), "{}", String).expect("Unable to read save filename");
                 image.reset(COLOR_BLACK);
-                image.draw_lines(edgelist, COLOR_TEAL);
+                image.draw_lines(edgelist, COLOR_PASTEL_YELLOW);
                 write(save_name, format!("{}", image))?;
             }
             unknown => {

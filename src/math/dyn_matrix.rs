@@ -36,12 +36,12 @@ impl<T: Default + Send + Sync + Float> DynMatrix<T> {
         ident_matrix
     }
 
-    pub fn add_col(&mut self, m: Point<T>) {
-        m.into_iter().for_each(|x| self.matrix.push(x));
+    pub fn add_col(&mut self, m: &Point<T>) {
+        m.into_iter().for_each(|x| self.matrix.push(*x));
         self.width += 1;
     }
 
-    pub fn add_edge(&mut self, p1: Point<T>, p2: Point<T>) {
+    pub fn add_edge(&mut self, p1: &Point<T>, p2: &Point<T>) {
         self.add_col(p1);
         self.add_col(p2);
     }

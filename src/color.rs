@@ -9,7 +9,7 @@ pub struct Color {
 }
 
 #[macro_export]
-macro_rules! new {
+macro_rules! new_color {
     ($red:expr, $green:expr, $blue:expr) => {
         Color {
             red: $red, 
@@ -26,18 +26,20 @@ impl fmt::Display for Color {
 }
 
 #[allow(dead_code)]
-pub const COLOR_BLACK: Color = new!(0, 0, 0);
+pub const COLOR_BLACK: Color = new_color!(0, 0, 0);
 #[allow(dead_code)]
-pub const COLOR_WHITE: Color = new!(255, 255, 255);
+pub const COLOR_WHITE: Color = new_color!(255, 255, 255);
 #[allow(dead_code)]
-pub const COLOR_RED: Color = new!(255, 0, 0);
+pub const COLOR_RED: Color = new_color!(255, 0, 0);
 #[allow(dead_code)]
-pub const COLOR_GREEN: Color = new!(0, 255, 0);
+pub const COLOR_GREEN: Color = new_color!(0, 255, 0);
 #[allow(dead_code)]
-pub const COLOR_BLUE: Color = new!(0, 0, 255);
+pub const COLOR_BLUE: Color = new_color!(0, 0, 255);
 #[allow(dead_code)]
-pub const COLOR_TEAL: Color = new!(0, 255, 255);
+pub const COLOR_TEAL: Color = new_color!(0, 255, 255);
 #[allow(dead_code)]
-pub const COLOR_PURPLE: Color = new!(255, 0, 255);
+pub const COLOR_PURPLE: Color = new_color!(255, 0, 255);
 #[allow(dead_code)]
-pub const COLOR_YELLOW: Color = new!(255, 255, 0);
+pub const COLOR_YELLOW: Color = new_color!(255, 255, 0);
+#[allow(dead_code)]
+pub const COLOR_PASTEL_YELLOW: Color = new_color!(239, 169, 74);

@@ -1,4 +1,4 @@
-use std::f64::consts::TAU;
+use std::f64::consts::{PI, TAU};
 
 use num::{Float, NumCast};
 
@@ -84,7 +84,7 @@ impl DynMatrix<f64> {
             let p0 = new_point(x0, y0, 0f64);
             let p1 = new_point(x1, y1, 0f64);
 
-            self.add_edge(p0, p1);
+            self.add_edge(&p0, &p1);
         }
     }
 
@@ -118,7 +118,7 @@ impl DynMatrix<f64> {
                     let x01 = g_x[(0, 0)] * t * t * t + g_x[(0, 1)] * t * t + g_x[(0, 2)] * t + g_x[(0, 3)];
                     let y01 = g_y[(0, 0)] * t * t * t + g_y[(0, 1)] * t * t + g_y[(0, 2)] * t + g_y[(0, 3)];
 
-                    self.add_edge(new_point(x00, y00, 0.0), new_point(x01, y01, 0.0));
+                    self.add_edge(&new_point(x00, y00, 0.0), &new_point(x01, y01, 0.0));
                 }
             },
             Curve::BEZIER => {
@@ -149,9 +149,94 @@ impl DynMatrix<f64> {
                     let x01 = g_x[(0, 0)] * t * t * t + g_x[(0, 1)] * t * t + g_x[(0, 2)] * t + g_x[(0, 3)];
                     let y01 = g_y[(0, 0)] * t * t * t + g_y[(0, 1)] * t * t + g_y[(0, 2)] * t + g_y[(0, 3)];
 
-                    self.add_edge(new_point(x00, y00, 0.0), new_point(x01, y01, 0.0));
+                    self.add_edge(&new_point(x00, y00, 0.0), &new_point(x01, y01, 0.0));
                 }
             },
+        }
+    }
+
+    pub fn add_box(&mut self, p0: Point<f64>, width: f64, height: f64, depth: f64) {
+        let p1 = new_point(p0[0] + width, p0[1], p0[2]);
+        let p2 = new_point(p0[0], p0[1] - height, p0[2]);
+        let p3 = new_point(p0[0] + width, p0[1] - height, p0[2]);
+        let p4 = new_point(p0[0], p0[1], p0[2] - depth);
+        let p5 = new_point(p0[0] + width, p0[1], p0[2] - depth);
+        let p6 = new_point(p0[0], p0[1] - height, p0[2] - depth);
+        let p7 = new_point(p0[0] + width, p0[1] - height, p0[2] - depth);
+
+        self.add_edge(&p0, &p1);
+        self.add_edge(&p0, &p2);
+        self.add_edge(&p2, &p3);
+        self.add_edge(&p3, &p1);
+        self.add_edge(&p0, &p4);
+        self.add_edge(&p1, &p5);
+        self.add_edge(&p3, &p7);
+        self.add_edge(&p2, &p6);
+        self.add_edge(&p4, &p5);
+        self.add_edge(&p4, &p6);
+        self.add_edge(&p6, &p7);
+        self.add_edge(&p7, &p5);
+    }
+
+    pub fn generate_sphere(c: Point<f64>, r: f64, step: f64) -> Self {
+        let mut m = Self::default();
+
+        let mut rot = 0f64;
+        while rot <= 1f64 {
+            let mut cir = 0f64;
+
+            while cir <= 1f64 {
+                let x = r * (PI * cir).cos() + c[0];
+                let y = r * (PI * cir).sin() * (TAU * rot).cos() + c[1];
+                let z = r * (PI * cir).sin() * (TAU * rot).sin() + c[2];
+
+                m.add_col(&new_point(x, y, z));
+
+                cir += step;
+            }
+
+            rot += step;
+        }
+
+        m
+    }
+
+    pub fn add_sphere(&mut self, c: Point<f64>, r: f64, step: f64) {
+        let points = Self::generate_sphere(c, r, step);
+
+        for p in points.matrix.chunks(4) {
+            self.add_edge(&new_point(p[0], p[1], p[2]), &new_point(p[0] + 1f64, p[1] + 1f64, p[2] + 1f64));
+        }
+    }
+
+    pub fn generate_torus(c: Point<f64>, r0: f64, r1: f64, step: f64) -> Self {
+        let mut m = Self::default();
+        let mut theta = 0f64;
+
+        while theta <= 1f64 {
+            let mut phi = 0f64;
+
+            while phi <= 1f64 {
+                let x = (phi * TAU).cos() * (r0 * (theta * TAU).cos() + r1) + c[0];
+                let y = r0 * (TAU * theta).sin() + c[1];
+                let z = -(phi * TAU).sin() * (r0 * (theta * TAU).cos() + r1) + c[2];
+
+                m.add_col(&new_point(x, y, z));
+
+                phi += step;
+            }
+
+            theta += step;
+        }
+
+        m
+    }
+
+    pub fn add_torus(&mut self, c: Point<f64>, r0: f64, r1: f64, step: f64) {
+        let m = Self::generate_torus(c, r0, r1, step);
+
+        for p in m.matrix.chunks(4) {
+            self.add_edge(&new_point(p[0], p[1], p[2]), &new_point(p[0] + 1f64, p[1] + 1f64, p[2] + 1f64));
         }
     }
 }
